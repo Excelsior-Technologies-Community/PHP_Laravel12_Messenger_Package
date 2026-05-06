@@ -25,11 +25,11 @@ class MessengerController extends Controller
         // Get threads
         $threads = Thread::whereHas('participants', function ($query) use ($user) {
             $query->where('owner_id', $user->id)
-                  ->where('owner_type', get_class($user));
+                ->where('owner_type', get_class($user));
         })
-        ->with(['latestMessage', 'participants'])
-        ->latest('updated_at')
-        ->get();
+            ->with(['latestMessage', 'participants'])
+            ->latest('updated_at')
+            ->get();
 
         return view('messenger.index', compact('threads', 'users', 'search'));
     }
