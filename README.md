@@ -745,4 +745,8 @@ PHP_Laravel12_Messenger_Package/
 Your PHP_Laravel12_Messenger_Package Project is now ready!
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> development
 
