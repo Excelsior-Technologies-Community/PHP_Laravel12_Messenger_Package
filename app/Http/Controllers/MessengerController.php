@@ -5,40 +5,49 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use RTippin\Messenger\Facades\MessengerComposer;
-use RTippin\Messenger\Models\Thread; //  Import this
+use RTippin\Messenger\Models\Thread;
 
 class MessengerController extends Controller
 {
-public function index()
-{
-    $user = auth()->user();
+    public function index(Request $request)
+    {
+        $user = auth()->user();
 
-    // Eager load the latestMessage relation
-    $threads = Thread::whereHas('participants', function ($query) use ($user) {
-        $query->where('owner_id', $user->id)
-              ->where('owner_type', get_class($user));
-    })->with('latestMessage') //  eager load last message
-      ->latest('updated_at')
-      ->get();
+        // Search users
+        $search = $request->search;
 
-    return view('messenger.index', compact('threads'));
-}
+        $users = User::where('id', '!=', $user->id)
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', "%$search%");
+            })
+            ->get();
 
-  public function sendMessage(Request $request)
-{
-    $request->validate([
-        'user_id' => 'required|exists:users,id',
-        'message' => 'required',
-    ]);
+        // Get threads
+        $threads = Thread::whereHas('participants', function ($query) use ($user) {
+            $query->where('owner_id', $user->id)
+                  ->where('owner_type', get_class($user));
+        })
+        ->with(['latestMessage', 'participants'])
+        ->latest('updated_at')
+        ->get();
 
-    $sender = auth()->user();
-    $receiver = User::findOrFail($request->user_id);
+        return view('messenger.index', compact('threads', 'users', 'search'));
+    }
 
-    // Use MessengerComposer to send a private message
-    MessengerComposer::to($receiver)
-        ->from($sender)
-        ->message($request->message);
+    public function sendMessage(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'message' => 'required',
+        ]);
 
-    return back()->with('success', 'Message sent successfully!');
-}
+        $sender = auth()->user();
+        $receiver = User::findOrFail($request->user_id);
+
+        MessengerComposer::to($receiver)
+            ->from($sender)
+            ->message($request->message);
+
+        return back()->with('success', 'Message sent successfully!');
+    }
 }
