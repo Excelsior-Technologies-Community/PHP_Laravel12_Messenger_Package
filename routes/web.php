@@ -17,9 +17,35 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Messenger
     Route::get('/messenger', [MessengerController::class, 'index'])->name('messenger');
-    Route::post('/send-message', [MessengerController::class, 'sendMessage'])->name('send.message');
+    
+    // Send message (form submit)
+    Route::post('/messenger/send', [MessengerController::class, 'sendMessage'])->name('send.message');
+    
+    // AJAX Send message
+    Route::post('/messenger/send-ajax', [MessengerController::class, 'sendMessageAjax'])->name('send.message.ajax');
+    
+    // Get messages for thread
+    Route::get('/messenger/messages/{threadId}', [MessengerController::class, 'getMessages'])->name('messenger.messages');
+    
+    // Get or create thread
+    Route::post('/messenger/thread', [MessengerController::class, 'getOrCreateThread'])->name('messenger.thread');
+    
+    // Mark as read
+    Route::post('/messenger/mark-read', [MessengerController::class, 'markAsRead'])->name('messenger.mark.read');
+    
+    // Delete message
+    Route::delete('/messenger/message/{messageId}', [MessengerController::class, 'deleteMessage'])->name('messenger.delete');
+    
+    // Search users
+    Route::get('/messenger/search-users', [MessengerController::class, 'searchUsers'])->name('messenger.search.users');
+    
+    // Typing indicator
+    Route::post('/messenger/typing', [MessengerController::class, 'typingIndicator'])->name('messenger.typing');
+    
+    // Upload attachment
+    Route::post('/messenger/upload', [MessengerController::class, 'uploadAttachment'])->name('messenger.upload');
+
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
